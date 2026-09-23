@@ -1,8 +1,8 @@
 #pragma once
 
+#include "ftkv/store/key_value_store.hpp"
 #include "grpc/grpc_client.h"
 #include "grpc/grpc_server.h"
-#include "ftkv/store/key_value_store.hpp"
 #include "raft/raft_node.h"
 
 #include <atomic>
@@ -34,7 +34,7 @@ struct NodeRuntimeConfig {
 };
 
 class NodeRuntime final {
-public:
+  public:
     explicit NodeRuntime(NodeRuntimeConfig config);
     ~NodeRuntime();
 
@@ -44,7 +44,7 @@ public:
     void start();
     void stop() noexcept;
 
-private:
+  private:
     void ticker_loop();
     void worker_loop();
     void enqueue_messages(std::vector<raft::Message> messages);
@@ -66,4 +66,4 @@ private:
 
 [[nodiscard]] std::string_view state_name(raft::NodeState state) noexcept;
 
-}  // namespace ftkv::node
+} // namespace ftkv::node

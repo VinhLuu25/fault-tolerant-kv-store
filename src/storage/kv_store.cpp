@@ -78,7 +78,7 @@ void remove_if_present(const std::filesystem::path& path) noexcept {
     std::filesystem::remove(path, ignored);
 }
 
-}  // namespace
+} // namespace
 
 FilePersistence::FilePersistence(std::filesystem::path file_path)
     : file_path_{std::move(file_path)} {
@@ -151,7 +151,8 @@ void FilePersistence::save(const EntryMap& entries) const {
     try {
         std::ofstream output{temporary_path, std::ios::binary | std::ios::trunc};
         if (!output.is_open()) {
-            throw StorageError{error_message("failed to open temporary storage file", temporary_path)};
+            throw StorageError{
+                error_message("failed to open temporary storage file", temporary_path)};
         }
 
         write_exact(output, kFileMagic.data(), kFileMagic.size());
@@ -181,8 +182,7 @@ void FilePersistence::save(const EntryMap& entries) const {
     }
 }
 
-KvStore::KvStore(std::unique_ptr<Persistence> persistence)
-    : persistence_{std::move(persistence)} {
+KvStore::KvStore(std::unique_ptr<Persistence> persistence) : persistence_{std::move(persistence)} {
     if (!persistence_) {
         throw std::invalid_argument{"persistence must not be null"};
     }
@@ -219,4 +219,4 @@ bool KvStore::erase(const std::string_view key) {
     return true;
 }
 
-}  // namespace ftkv::storage
+} // namespace ftkv::storage

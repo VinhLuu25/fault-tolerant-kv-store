@@ -1,6 +1,6 @@
+#include "ftkv/store/in_memory_key_value_store.hpp"
 #include "grpc/grpc_client.h"
 #include "grpc/grpc_server.h"
-#include "ftkv/store/in_memory_key_value_store.hpp"
 #include "raft/raft_node.h"
 
 #include <chrono>
@@ -47,7 +47,7 @@ void expect(const bool condition, const std::string_view message) {
 }
 
 class DelayedStore final : public KeyValueStore {
-public:
+  public:
     void put(std::string, std::string) override { std::this_thread::sleep_for(30ms); }
 
     [[nodiscard]] std::optional<std::string> get(std::string_view) const override {
@@ -135,8 +135,7 @@ void test_node_communication() {
            "GetStatus must expose the initial Raft progress");
 
     const auto vote = client.request_vote(1, RequestVoteRequest{1, 1, 0, 0});
-    expect(vote.term == 1 && vote.vote_granted,
-           "RequestVote RPC must grant an eligible candidate");
+    expect(vote.term == 1 && vote.vote_granted, "RequestVote RPC must grant an eligible candidate");
 
     AppendEntriesRequest append;
     append.term = 1;
@@ -170,7 +169,7 @@ void test_node_communication() {
     }
 }
 
-}  // namespace
+} // namespace
 
 int main() {
     test_client_requests_and_retries();

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(
     fault_tolerant_kv_store
-    VERSION 0.1.0
+    VERSION 1.0.0
     DESCRIPTION "A fault-tolerant distributed key-value store"
     LANGUAGES CXX
 )
@@ -92,6 +92,7 @@ add_executable(
     src/node/node_runtime.h
 )
 target_link_libraries(ftkv_server PRIVATE ftkv::grpc)
+target_compile_definitions(ftkv_server PRIVATE FTKV_VERSION="${PROJECT_VERSION}")
 
 if(FTKV_ENABLE_WARNINGS)
     if(MSVC)

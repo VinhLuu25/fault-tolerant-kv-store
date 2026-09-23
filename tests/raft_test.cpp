@@ -49,7 +49,7 @@ void expect(const bool condition, const std::string_view message) {
 }
 
 class TestCluster final {
-public:
+  public:
     explicit TestCluster(std::vector<NodeId> node_ids) {
         for (const auto node_id : node_ids) {
             RaftConfig config;
@@ -116,7 +116,7 @@ public:
         }
     }
 
-private:
+  private:
     void drain_all_nodes(std::deque<Message>& pending) {
         for (auto& [unused, raft_node] : nodes_) {
             static_cast<void>(unused);
@@ -309,7 +309,7 @@ void test_vote_requires_an_up_to_date_log() {
            "server must grant at most one vote in a term");
 }
 
-}  // namespace
+} // namespace
 
 int main() {
     test_leader_election_and_failover();

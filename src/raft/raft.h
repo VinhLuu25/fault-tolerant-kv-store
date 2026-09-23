@@ -99,7 +99,7 @@ struct PersistentState {
 };
 
 class RaftStorage {
-public:
+  public:
     virtual ~RaftStorage() = default;
 
     [[nodiscard]] virtual PersistentState load() const = 0;
@@ -107,22 +107,22 @@ public:
 };
 
 class InMemoryRaftStorage final : public RaftStorage {
-public:
+  public:
     explicit InMemoryRaftStorage(PersistentState initial_state = {});
 
     [[nodiscard]] PersistentState load() const override;
     void save(const PersistentState& state) override;
 
-private:
+  private:
     mutable std::mutex mutex_;
     PersistentState state_;
 };
 
 class RaftError final : public std::runtime_error {
-public:
+  public:
     using std::runtime_error::runtime_error;
 };
 
 [[nodiscard]] Term message_term(const Message& message);
 
-}  // namespace ftkv::raft
+} // namespace ftkv::raft

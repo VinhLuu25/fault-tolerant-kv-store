@@ -25,7 +25,7 @@ void validate_config(const RaftConfig& config) {
     }
 }
 
-}  // namespace
+} // namespace
 
 RaftNode::RaftNode(RaftConfig config, std::shared_ptr<RaftStorage> storage)
     : config_{std::move(config)}, storage_{std::move(storage)},
@@ -45,7 +45,7 @@ RaftNode::RaftNode(RaftConfig config, std::shared_ptr<RaftStorage> storage)
         throw RaftError{"persisted vote references a non-member"};
     }
 
-    log_.push_back(LogEntry{});  // Sentinel keeps Raft log indexes one-based.
+    log_.push_back(LogEntry{}); // Sentinel keeps Raft log indexes one-based.
     Term previous_term = 0;
     for (const auto& entry : persisted.log) {
         if (entry.term == 0 || entry.term > current_term_ || entry.term < previous_term) {
@@ -99,9 +99,9 @@ std::optional<Message> RaftNode::handle_request(const Message& message) {
     }
 
     for (auto index = first_new_message; index < outbox_.size(); ++index) {
-        const auto is_vote_response = std::holds_alternative<RequestVoteRequest>(message.rpc) &&
-                                      std::holds_alternative<RequestVoteResponse>(
-                                          outbox_[index].rpc);
+        const auto is_vote_response =
+            std::holds_alternative<RequestVoteRequest>(message.rpc) &&
+            std::holds_alternative<RequestVoteResponse>(outbox_[index].rpc);
         const auto* append_request = std::get_if<AppendEntriesRequest>(&message.rpc);
         const auto* append_response = std::get_if<AppendEntriesResponse>(&outbox_[index].rpc);
         const auto is_append_response = append_request != nullptr && append_response != nullptr &&
@@ -207,7 +207,7 @@ std::vector<LogEntry> RaftNode::log_entries() const {
 
 NodeSnapshot RaftNode::snapshot() const {
     const std::scoped_lock lock{mutex_};
-    return NodeSnapshot{config_.node_id, state_,         current_term_, leader_id_,
+    return NodeSnapshot{config_.node_id, state_,        current_term_,          leader_id_,
                         commit_index_,   last_applied_, last_log_index_locked()};
 }
 
@@ -287,8 +287,7 @@ void RaftNode::become_leader_locked() {
     broadcast_append_entries_locked();
 }
 
-void RaftNode::handle_request_vote_locked(const NodeId from,
-                                          const RequestVoteRequest& request) {
+void RaftNode::handle_request_vote_locked(const NodeId from, const RequestVoteRequest& request) {
     if (request.candidate_id != from || request.term < current_term_) {
         send_locked(from, RequestVoteResponse{current_term_, false});
         return;
@@ -352,8 +351,7 @@ void RaftNode::handle_append_entries_locked(const NodeId from,
     if (request.previous_log_index > 0 &&
         log_[static_cast<std::size_t>(request.previous_log_index)].term !=
             request.previous_log_term) {
-        const auto conflict_term =
-            log_[static_cast<std::size_t>(request.previous_log_index)].term;
+        const auto conflict_term = log_[static_cast<std::size_t>(request.previous_log_index)].term;
         auto conflict_index = request.previous_log_index;
         while (conflict_index > 1U &&
                log_[static_cast<std::size_t>(conflict_index - 1U)].term == conflict_term) {
@@ -386,9 +384,10 @@ void RaftNode::handle_append_entries_locked(const NodeId from,
     }
 
     if (incoming_offset < request.entries.size()) {
-        log_.insert(log_.end(), std::next(request.entries.begin(),
-                                         static_cast<std::ptrdiff_t>(incoming_offset)),
-                    request.entries.end());
+        log_.insert(
+            log_.end(),
+            std::next(request.entries.begin(), static_cast<std::ptrdiff_t>(incoming_offset)),
+            request.entries.end());
         log_changed = true;
     }
     if (log_changed) {
@@ -399,14 +398,14 @@ void RaftNode::handle_append_entries_locked(const NodeId from,
         commit_index_ = std::min(request.leader_commit, last_log_index_locked());
         apply_committed_entries_locked();
     }
-    const auto match_index = request.previous_log_index +
-                             static_cast<LogIndex>(request.entries.size());
+    const auto match_index =
+        request.previous_log_index + static_cast<LogIndex>(request.entries.size());
     send_locked(from, AppendEntriesResponse{current_term_, true, match_index, match_index + 1U,
                                             std::nullopt, request.request_id});
 }
 
-void RaftNode::handle_append_entries_response_locked(
-    const NodeId from, const AppendEntriesResponse& response) {
+void RaftNode::handle_append_entries_response_locked(const NodeId from,
+                                                     const AppendEntriesResponse& response) {
     if (state_ != NodeState::leader || response.term != current_term_) {
         return;
     }
@@ -490,8 +489,7 @@ void RaftNode::apply_committed_entries_locked() {
         ++last_applied_;
         const auto& entry = log_[static_cast<std::size_t>(last_applied_)];
         if (!entry.is_no_op) {
-            committed_entries_.push_back(
-                CommittedEntry{last_applied_, entry.term, entry.command});
+            committed_entries_.push_back(CommittedEntry{last_applied_, entry.term, entry.command});
         }
     }
 }
@@ -507,12 +505,10 @@ bool RaftNode::is_peer_locked(const NodeId node_id) const {
     return node_id != config_.node_id && members_.contains(node_id);
 }
 
-LogIndex RaftNode::last_log_index_locked() const {
-    return static_cast<LogIndex>(log_.size() - 1U);
-}
+LogIndex RaftNode::last_log_index_locked() const { return static_cast<LogIndex>(log_.size() - 1U); }
 
 Term RaftNode::last_log_term_locked() const { return log_.back().term; }
 
 std::size_t RaftNode::quorum_size_locked() const { return (members_.size() / 2U) + 1U; }
 
-}  // namespace ftkv::raft
+} // namespace ftkv::raft

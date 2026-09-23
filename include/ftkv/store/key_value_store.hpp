@@ -8,7 +8,7 @@ namespace ftkv::store {
 
 // Defines the storage contract independently of networking and replication.
 class KeyValueStore {
-public:
+  public:
     virtual ~KeyValueStore() = default;
 
     virtual void put(std::string key, std::string value) = 0;
@@ -16,4 +16,4 @@ public:
     [[nodiscard]] virtual bool erase(std::string_view key) = 0;
 };
 
-}  // namespace ftkv::store
+} // namespace ftkv::store

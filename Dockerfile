@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
 
+ARG FTKV_VERSION=1.0.0
+
 FROM ubuntu:24.04 AS builder
 
 RUN apt-get update \
@@ -20,6 +22,12 @@ RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
     && cmake --build build --parallel
 
 FROM ubuntu:24.04 AS runtime
+
+ARG FTKV_VERSION
+
+LABEL org.opencontainers.image.title="Fault-Tolerant Distributed Key-Value Store" \
+      org.opencontainers.image.version="${FTKV_VERSION}" \
+      org.opencontainers.image.source="https://github.com/VinhLuu25/fault-tolerant-kv-store"
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
