@@ -7,7 +7,7 @@ process lifecycle code can evolve and be tested independently. Dependencies shou
 protocol adapters and executables may depend on core interfaces, while the core must not depend on
 a particular RPC framework or deployment environment.
 
-## Planned components
+## Component model
 
 1. **API/transport** validates client requests and translates protocol messages into commands.
 2. **Consensus** orders mutating commands across a quorum of nodes.
@@ -42,15 +42,18 @@ node 1 the preferred initial candidate while leadership is still established thr
 majority-vote path. TLS credentials, peer authentication, and production service discovery remain
 integration work.
 
-## Expected request flow
+## Target request flow
 
 ```text
 client -> RPC adapter -> node service -> consensus -> storage
                                       -> persistence
 ```
 
-Linearizable read behavior, membership changes, snapshots, and transport failure assumptions will
-be captured as architecture decision records before their implementations are introduced.
+The current `KeyValueStore` gRPC service calls the node-local store directly. Client mutations are
+not yet proposed through Raft or applied from the committed-entry stream, so cross-node replicated
+and linearizable client semantics are not currently claimed. Linearizable reads, membership
+changes, snapshots, and transport failure assumptions will be captured as architecture decision
+records before their implementations are introduced.
 
 ## Source boundaries
 
