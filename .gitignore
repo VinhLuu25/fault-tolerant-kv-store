@@ -1,69 +1,50 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-*.so.*
-
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-
-# Build directories
-build/
-Build/
-build-*/
-
-# CMake generated files
+# CMake build trees and generated metadata
+/build/
+/build-*/
+/cmake-build-*/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
+CTestTestfile.cmake
 Makefile
 install_manifest.txt
 compile_commands.json
 
-# Temporary files
-*.tmp
-*.log
-*.bak
-*.swp
+# Compiled artifacts
+*.a
+*.dll
+*.dylib
+*.exe
+*.lib
+*.o
+*.obj
+*.out
+*.so
+*.so.*
 
-# vcpkg
-vcpkg_installed/
-
-# debug information files
-*.dwo
-
-# test output & cache
+# Test, coverage, and profiling output
 Testing/
-.cache/
+*.gcda
+*.gcno
+*.gcov
+*.profraw
+*.profdata
+
+# Package manager output
+/vcpkg_installed/
+/conan-build/
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
+*.suo
+*.swp
+*~
+
+# Local environment and temporary files
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
