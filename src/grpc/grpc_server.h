@@ -12,7 +12,7 @@
 namespace ftkv::rpc {
 
 class GrpcServer final {
-public:
+  public:
     GrpcServer(std::string listen_address, std::shared_ptr<store::KeyValueStore> key_value_store,
                std::shared_ptr<raft::RaftNode> raft_node);
     ~GrpcServer();
@@ -26,7 +26,7 @@ public:
     [[nodiscard]] int bound_port() const;
     [[nodiscard]] std::string endpoint() const;
 
-private:
+  private:
     class KeyValueService;
     class RaftService;
 
@@ -38,4 +38,4 @@ private:
     int bound_port_{0};
 };
 
-}  // namespace ftkv::rpc
+} // namespace ftkv::rpc

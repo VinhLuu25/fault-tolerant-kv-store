@@ -15,8 +15,7 @@ struct InvocationResult {
 };
 
 [[nodiscard]] bool is_retryable(const grpc::StatusCode code) {
-    return code == grpc::StatusCode::UNAVAILABLE ||
-           code == grpc::StatusCode::DEADLINE_EXCEEDED ||
+    return code == grpc::StatusCode::UNAVAILABLE || code == grpc::StatusCode::DEADLINE_EXCEEDED ||
            code == grpc::StatusCode::RESOURCE_EXHAUSTED || code == grpc::StatusCode::ABORTED;
 }
 
@@ -43,8 +42,7 @@ template <typename Operation>
         grpc::ClientContext context;
         context.set_deadline(std::chrono::system_clock::now() + options.timeout);
         auto status = std::invoke(operation, context);
-        if (status.ok() || !is_retryable(status.error_code()) ||
-            attempt == options.max_attempts) {
+        if (status.ok() || !is_retryable(status.error_code()) || attempt == options.max_attempts) {
             return InvocationResult{std::move(status), attempt};
         }
 
@@ -63,7 +61,7 @@ template <typename Operation>
     return message;
 }
 
-}  // namespace
+} // namespace
 
 GrpcError::GrpcError(std::string operation, const grpc::Status& status, const std::size_t attempts)
     : std::runtime_error{error_text(operation, status, attempts)},
@@ -144,20 +142,20 @@ NodeStatus GrpcClient::status() const {
 
     raft::NodeState state;
     switch (response.role()) {
-        case ::ftkv::v1::NODE_ROLE_FOLLOWER:
-            state = raft::NodeState::follower;
-            break;
-        case ::ftkv::v1::NODE_ROLE_CANDIDATE:
-            state = raft::NodeState::candidate;
-            break;
-        case ::ftkv::v1::NODE_ROLE_LEADER:
-            state = raft::NodeState::leader;
-            break;
-        default:
-            throw GrpcError{"GetStatus",
-                            grpc::Status{grpc::StatusCode::DATA_LOSS,
-                                         "server returned an unknown Raft role"},
-                            result.attempts};
+    case ::ftkv::v1::NODE_ROLE_FOLLOWER:
+        state = raft::NodeState::follower;
+        break;
+    case ::ftkv::v1::NODE_ROLE_CANDIDATE:
+        state = raft::NodeState::candidate;
+        break;
+    case ::ftkv::v1::NODE_ROLE_LEADER:
+        state = raft::NodeState::leader;
+        break;
+    default:
+        throw GrpcError{
+            "GetStatus",
+            grpc::Status{grpc::StatusCode::DATA_LOSS, "server returned an unknown Raft role"},
+            result.attempts};
     }
 
     std::optional<raft::NodeId> leader_id;
@@ -165,13 +163,13 @@ NodeStatus GrpcClient::status() const {
         leader_id = response.leader_id();
     }
     return NodeStatus{response.node_id(),       state,
-                      response.current_term(), leader_id,
-                      response.commit_index(), response.last_applied(),
+                      response.current_term(),  leader_id,
+                      response.commit_index(),  response.last_applied(),
                       response.last_log_index()};
 }
 
-raft::RequestVoteResponse GrpcClient::request_vote(
-    const raft::NodeId sender, const raft::RequestVoteRequest& request) const {
+raft::RequestVoteResponse GrpcClient::request_vote(const raft::NodeId sender,
+                                                   const raft::RequestVoteRequest& request) const {
     if (request.candidate_id != sender) {
         throw std::invalid_argument{"RequestVote sender must match candidate ID"};
     }
@@ -192,8 +190,9 @@ raft::RequestVoteResponse GrpcClient::request_vote(
     return raft::RequestVoteResponse{wire_response.term(), wire_response.vote_granted()};
 }
 
-raft::AppendEntriesResponse GrpcClient::append_entries(
-    const raft::NodeId sender, const raft::AppendEntriesRequest& request) const {
+raft::AppendEntriesResponse
+GrpcClient::append_entries(const raft::NodeId sender,
+                           const raft::AppendEntriesRequest& request) const {
     if (request.leader_id != sender) {
         throw std::invalid_argument{"AppendEntries sender must match leader ID"};
     }
@@ -224,12 +223,9 @@ raft::AppendEntriesResponse GrpcClient::append_entries(
     if (wire_response.has_conflict_term()) {
         conflict_term = wire_response.conflict_term();
     }
-    return raft::AppendEntriesResponse{wire_response.term(),
-                                       wire_response.success(),
-                                       wire_response.match_index(),
-                                       wire_response.conflict_index(),
-                                       conflict_term,
-                                       wire_response.request_id()};
+    return raft::AppendEntriesResponse{
+        wire_response.term(),           wire_response.success(), wire_response.match_index(),
+        wire_response.conflict_index(), conflict_term,           wire_response.request_id()};
 }
 
-}  // namespace ftkv::rpc
+} // namespace ftkv::rpc

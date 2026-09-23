@@ -33,10 +33,10 @@ template <typename Operation>
     }
 }
 
-}  // namespace
+} // namespace
 
 class GrpcServer::KeyValueService final : public ::ftkv::v1::KeyValueStore::Service {
-public:
+  public:
     explicit KeyValueService(std::shared_ptr<store::KeyValueStore> key_value_store)
         : key_value_store_{std::move(key_value_store)} {
         if (!key_value_store_) {
@@ -63,16 +63,16 @@ public:
 
     grpc::Status Delete(grpc::ServerContext* context, const ::ftkv::v1::DeleteRequest* request,
                         ::ftkv::v1::DeleteResponse* response) override {
-        return run_handler(
-            context, [&] { response->set_deleted(key_value_store_->erase(request->key())); });
+        return run_handler(context,
+                           [&] { response->set_deleted(key_value_store_->erase(request->key())); });
     }
 
-private:
+  private:
     std::shared_ptr<store::KeyValueStore> key_value_store_;
 };
 
 class GrpcServer::RaftService final : public ::ftkv::v1::Raft::Service {
-public:
+  public:
     explicit RaftService(std::shared_ptr<raft::RaftNode> raft_node)
         : raft_node_{std::move(raft_node)} {
         if (!raft_node_) {
@@ -125,8 +125,7 @@ public:
                 throw std::invalid_argument{"AppendEntries sender is not a cluster member"};
             }
 
-            const auto* append_response =
-                std::get_if<raft::AppendEntriesResponse>(&message->rpc);
+            const auto* append_response = std::get_if<raft::AppendEntriesResponse>(&message->rpc);
             if (append_response == nullptr) {
                 throw std::logic_error{"Raft node did not produce an AppendEntries response"};
             }
@@ -142,22 +141,21 @@ public:
         });
     }
 
-    grpc::Status GetStatus(grpc::ServerContext* context,
-                           const ::ftkv::v1::NodeStatusRequest*,
+    grpc::Status GetStatus(grpc::ServerContext* context, const ::ftkv::v1::NodeStatusRequest*,
                            ::ftkv::v1::NodeStatusResponse* response) override {
         return run_handler(context, [&] {
             const auto snapshot = raft_node_->snapshot();
             response->set_node_id(snapshot.node_id);
             switch (snapshot.state) {
-                case raft::NodeState::follower:
-                    response->set_role(::ftkv::v1::NODE_ROLE_FOLLOWER);
-                    break;
-                case raft::NodeState::candidate:
-                    response->set_role(::ftkv::v1::NODE_ROLE_CANDIDATE);
-                    break;
-                case raft::NodeState::leader:
-                    response->set_role(::ftkv::v1::NODE_ROLE_LEADER);
-                    break;
+            case raft::NodeState::follower:
+                response->set_role(::ftkv::v1::NODE_ROLE_FOLLOWER);
+                break;
+            case raft::NodeState::candidate:
+                response->set_role(::ftkv::v1::NODE_ROLE_CANDIDATE);
+                break;
+            case raft::NodeState::leader:
+                response->set_role(::ftkv::v1::NODE_ROLE_LEADER);
+                break;
             }
             response->set_current_term(snapshot.current_term);
             response->set_has_leader(snapshot.leader_id.has_value());
@@ -170,7 +168,7 @@ public:
         });
     }
 
-private:
+  private:
     std::shared_ptr<raft::RaftNode> raft_node_;
 };
 
@@ -233,4 +231,4 @@ std::string GrpcServer::endpoint() const {
     return listen_address_.substr(0, separator + 1U) + std::to_string(bound_port_);
 }
 
-}  // namespace ftkv::rpc
+} // namespace ftkv::rpc

@@ -21,4 +21,4 @@ Term message_term(const Message& message) {
     return std::visit([](const auto& rpc) { return rpc.term; }, message.rpc);
 }
 
-}  // namespace ftkv::raft
+} // namespace ftkv::raft

@@ -16,7 +16,7 @@
 namespace ftkv::raft {
 
 class RaftNode final {
-public:
+  public:
     RaftNode(RaftConfig config, std::shared_ptr<RaftStorage> storage);
 
     RaftNode(const RaftNode&) = delete;
@@ -39,7 +39,7 @@ public:
     [[nodiscard]] std::vector<LogEntry> log_entries() const;
     [[nodiscard]] NodeSnapshot snapshot() const;
 
-private:
+  private:
     void reset_election_timeout_locked();
     void persist_locked();
     void become_follower_locked(Term term, std::optional<NodeId> leader_id);
@@ -49,8 +49,7 @@ private:
     void handle_request_vote_locked(NodeId from, const RequestVoteRequest& request);
     void handle_request_vote_response_locked(NodeId from, const RequestVoteResponse& response);
     void handle_append_entries_locked(NodeId from, const AppendEntriesRequest& request);
-    void handle_append_entries_response_locked(NodeId from,
-                                               const AppendEntriesResponse& response);
+    void handle_append_entries_response_locked(NodeId from, const AppendEntriesResponse& response);
 
     void broadcast_append_entries_locked();
     void send_append_entries_locked(NodeId peer);
@@ -90,4 +89,4 @@ private:
     std::vector<CommittedEntry> committed_entries_;
 };
 
-}  // namespace ftkv::raft
+} // namespace ftkv::raft

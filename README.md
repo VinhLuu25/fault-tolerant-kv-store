@@ -186,6 +186,7 @@ native-only build.
 Inspect the elected leader and replicated-log progress with the built-in status command:
 
 ```bash
+./build/ftkv_server --version
 docker compose exec node1 ftkv_server --status 127.0.0.1:50051
 ```
 

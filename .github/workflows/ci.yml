@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  formatting:
+    name: Formatting
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install --yes clang-format-17
+
+      - name: Verify C++ formatting
+        shell: bash
+        run: |
+          mapfile -t sources < <(git ls-files '*.cpp' '*.h' '*.hpp')
+          clang-format-17 --dry-run --Werror "${sources[@]}"
+
+  build-and-test:
+    name: Release build and tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            build-essential \
+            cmake \
+            libgrpc++-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            protobuf-compiler-grpc
+
+      - name: Verify Docker Compose
+        run: docker compose version
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

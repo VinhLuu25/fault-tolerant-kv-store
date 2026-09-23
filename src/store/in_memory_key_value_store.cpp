@@ -25,4 +25,4 @@ bool InMemoryKeyValueStore::erase(const std::string_view key) {
     return entries_.erase(std::string{key}) != 0U;
 }
 
-}  // namespace ftkv::store
+} // namespace ftkv::store

@@ -27,6 +27,14 @@ ftkv_add_test(ftkv_storage_tests kv_store_test.cpp)
 ftkv_add_test(ftkv_raft_tests raft_test.cpp)
 ftkv_add_test(ftkv_grpc_tests grpc_test.cpp ftkv::grpc)
 
+add_test(NAME ftkv_version_test COMMAND ftkv_server --version)
+set_tests_properties(
+    ftkv_version_test
+    PROPERTIES
+        LABELS "unit;release"
+        PASS_REGULAR_EXPRESSION "^ftkv_server ${PROJECT_VERSION}"
+)
+
 set_tests_properties(ftkv_unit_tests ftkv_storage_tests PROPERTIES LABELS "unit;storage")
 set_tests_properties(ftkv_raft_tests PROPERTIES LABELS "unit;raft")
 set_tests_properties(ftkv_grpc_tests PROPERTIES LABELS "unit;grpc")

@@ -29,9 +29,8 @@ void request_stop(int) { stop_requested = 1; }
 
 void print_status(const ftkv::raft::NodeSnapshot& status) {
     std::cout << "node_id=" << status.node_id << " state=" << ftkv::node::state_name(status.state)
-              << " term=" << status.current_term << " leader_id="
-              << status.leader_id.value_or(0) << " commit_index=" << status.commit_index
-              << " last_applied=" << status.last_applied
+              << " term=" << status.current_term << " leader_id=" << status.leader_id.value_or(0)
+              << " commit_index=" << status.commit_index << " last_applied=" << status.last_applied
               << " last_log_index=" << status.last_log_index << '\n';
 }
 
@@ -56,20 +55,23 @@ void print_status(const ftkv::raft::NodeSnapshot& status) {
     return EXIT_SUCCESS;
 }
 
-}  // namespace
+} // namespace
 
 int main(const int argc, char* argv[]) {
     try {
         if (argc == 1) {
             return run_node();
         }
-        if (argc == 3 &&
-            (std::string_view{argv[1]} == "--healthcheck" ||
-             std::string_view{argv[1]} == "--status")) {
+        if (argc == 2 && std::string_view{argv[1]} == "--version") {
+            std::cout << "ftkv_server " << FTKV_VERSION << '\n';
+            return EXIT_SUCCESS;
+        }
+        if (argc == 3 && (std::string_view{argv[1]} == "--healthcheck" ||
+                          std::string_view{argv[1]} == "--status")) {
             return run_probe(argv[1], argv[2]);
         }
 
-        std::cerr << "usage: ftkv_server [--healthcheck TARGET | --status TARGET]\n";
+        std::cerr << "usage: ftkv_server [--version | --healthcheck TARGET | --status TARGET]\n";
         return EXIT_FAILURE;
     } catch (const std::exception& error) {
         std::cerr << "ftkv_server: " << error.what() << '\n';

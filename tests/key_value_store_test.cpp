@@ -13,7 +13,7 @@ void expect(const bool condition, const std::string_view message) {
     }
 }
 
-}  // namespace
+} // namespace
 
 int main() {
     ftkv::store::InMemoryKeyValueStore store;

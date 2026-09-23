@@ -41,7 +41,7 @@ template <typename Integer>
 }
 
 [[nodiscard]] std::chrono::milliseconds environment_duration(const char* name,
-                                                              const std::int64_t fallback) {
+                                                             const std::int64_t fallback) {
     const auto* value = std::getenv(name);
     if (value == nullptr) {
         return std::chrono::milliseconds{fallback};
@@ -50,7 +50,7 @@ template <typename Integer>
 }
 
 [[nodiscard]] std::map<raft::NodeId, std::string> parse_peers(const std::string_view value,
-                                                             const raft::NodeId local_id) {
+                                                              const raft::NodeId local_id) {
     std::map<raft::NodeId, std::string> peers;
     std::size_t offset = 0;
     while (offset < value.size()) {
@@ -89,9 +89,9 @@ void append_uint64(std::string& output, const std::uint64_t value) {
     }
     std::uint64_t value = 0;
     for (unsigned int shift = 0; shift < 64U; shift += 8U) {
-        value |= static_cast<std::uint64_t>(
-                     static_cast<unsigned char>(input[offset + (shift / 8U)]))
-                 << shift;
+        value |=
+            static_cast<std::uint64_t>(static_cast<unsigned char>(input[offset + (shift / 8U)]))
+            << shift;
     }
     offset += sizeof(std::uint64_t);
     return value;
@@ -128,11 +128,9 @@ void append_uint64(std::string& output, const std::uint64_t value) {
             command_size > bytes.size() - offset) {
             throw raft::RaftError{"persisted Raft command has an invalid size"};
         }
-        state.log.push_back(
-            raft::LogEntry{term,
-                           std::string{bytes.substr(
-                               offset, static_cast<std::size_t>(command_size))},
-                           is_no_op});
+        state.log.push_back(raft::LogEntry{
+            term, std::string{bytes.substr(offset, static_cast<std::size_t>(command_size))},
+            is_no_op});
         offset += static_cast<std::size_t>(command_size);
     }
     if (offset != bytes.size()) {
@@ -166,7 +164,7 @@ void append_uint64(std::string& output, const std::uint64_t value) {
 }
 
 class DurableRaftStorage final : public raft::RaftStorage {
-public:
+  public:
     explicit DurableRaftStorage(const std::filesystem::path& file_path)
         : store_{std::make_unique<storage::FilePersistence>(file_path)} {}
 
@@ -179,7 +177,7 @@ public:
         store_.put(std::string{kRaftStateKey}, encode_state(state));
     }
 
-private:
+  private:
     storage::KvStore store_;
 };
 
@@ -197,19 +195,17 @@ private:
     return result;
 }
 
-}  // namespace
+} // namespace
 
 NodeRuntimeConfig NodeRuntimeConfig::from_environment() {
     NodeRuntimeConfig config;
-    config.node_id = parse_integer<raft::NodeId>(require_environment("FTKV_NODE_ID"),
-                                                 "FTKV_NODE_ID");
+    config.node_id =
+        parse_integer<raft::NodeId>(require_environment("FTKV_NODE_ID"), "FTKV_NODE_ID");
     config.listen_address = require_environment("FTKV_LISTEN_ADDRESS");
     config.data_directory = require_environment("FTKV_DATA_DIR");
     config.peers = parse_peers(require_environment("FTKV_PEERS"), config.node_id);
-    config.election_timeout_min =
-        environment_duration("FTKV_ELECTION_TIMEOUT_MIN_MS", 300);
-    config.election_timeout_max =
-        environment_duration("FTKV_ELECTION_TIMEOUT_MAX_MS", 500);
+    config.election_timeout_min = environment_duration("FTKV_ELECTION_TIMEOUT_MIN_MS", 300);
+    config.election_timeout_max = environment_duration("FTKV_ELECTION_TIMEOUT_MAX_MS", 500);
     config.heartbeat_interval = environment_duration("FTKV_HEARTBEAT_INTERVAL_MS", 100);
     return config;
 }
@@ -355,12 +351,12 @@ void NodeRuntime::send_message(const raft::Message& message) {
     try {
         if (const auto* request = std::get_if<raft::RequestVoteRequest>(&message.rpc)) {
             const auto response = client->second->request_vote(config_.node_id, *request);
-            static_cast<void>(raft_node_->step(
-                raft::Message{message.to, config_.node_id, response}));
+            static_cast<void>(
+                raft_node_->step(raft::Message{message.to, config_.node_id, response}));
         } else if (const auto* request = std::get_if<raft::AppendEntriesRequest>(&message.rpc)) {
             const auto response = client->second->append_entries(config_.node_id, *request);
-            static_cast<void>(raft_node_->step(
-                raft::Message{message.to, config_.node_id, response}));
+            static_cast<void>(
+                raft_node_->step(raft::Message{message.to, config_.node_id, response}));
         }
     } catch (const rpc::GrpcError&) {
         // Raft retries elections and replication on later ticks.
@@ -369,14 +365,14 @@ void NodeRuntime::send_message(const raft::Message& message) {
 
 std::string_view state_name(const raft::NodeState state) noexcept {
     switch (state) {
-        case raft::NodeState::follower:
-            return "follower";
-        case raft::NodeState::candidate:
-            return "candidate";
-        case raft::NodeState::leader:
-            return "leader";
+    case raft::NodeState::follower:
+        return "follower";
+    case raft::NodeState::candidate:
+        return "candidate";
+    case raft::NodeState::leader:
+        return "leader";
     }
     return "unknown";
 }
 
-}  // namespace ftkv::node
+} // namespace ftkv::node

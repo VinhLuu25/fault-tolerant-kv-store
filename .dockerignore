@@ -7,4 +7,5 @@ cmake-build-*
 .vscode
 .env
 .env.*
+!.env.example
 *.log

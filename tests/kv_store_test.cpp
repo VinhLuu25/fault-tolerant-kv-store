@@ -46,7 +46,7 @@ void expect_throws(Operation&& operation, const std::string_view message) {
 }
 
 class TemporaryDirectory final {
-public:
+  public:
     TemporaryDirectory() {
         const auto unique_id = std::chrono::steady_clock::now().time_since_epoch().count();
         path_ = std::filesystem::temp_directory_path() /
@@ -66,12 +66,12 @@ public:
 
     [[nodiscard]] const std::filesystem::path& path() const noexcept { return path_; }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
 class MemoryPersistence final : public Persistence {
-public:
+  public:
     [[nodiscard]] EntryMap load() const override { return entries_; }
 
     void save(const EntryMap& entries) const override {
@@ -129,9 +129,8 @@ void test_invalid_configuration() {
     expect_throws<std::invalid_argument>(
         [] { static_cast<void>(FilePersistence{std::filesystem::path{}}); },
         "an empty storage path must be rejected");
-    expect_throws<std::invalid_argument>(
-        [] { KvStore store{std::unique_ptr<Persistence>{}}; },
-        "a missing persistence implementation must be rejected");
+    expect_throws<std::invalid_argument>([] { KvStore store{std::unique_ptr<Persistence>{}}; },
+                                         "a missing persistence implementation must be rejected");
 }
 
 void test_failed_write_rolls_back() {
@@ -180,7 +179,7 @@ void test_concurrent_access() {
            "concurrent PUT operations must not lose entries");
 }
 
-}  // namespace
+} // namespace
 
 int main() {
     test_file_persistence_and_crud();
