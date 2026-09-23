@@ -23,11 +23,17 @@ FROM ubuntu:24.04 AS runtime
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-        libstdc++6 \
-    && rm -rf /var/lib/apt/lists/*
+        ca-certificates \
+        libgrpc++1.51t64 \
+        libprotobuf32t64 \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 10001 ftkv \
+    && install -d -o ftkv -g ftkv /var/lib/ftkv
 
-RUN useradd --create-home --uid 10001 ftkv
 COPY --from=builder /workspace/build/ftkv_server /usr/local/bin/ftkv_server
 
 USER ftkv
+WORKDIR /var/lib/ftkv
+EXPOSE 50051
+STOPSIGNAL SIGTERM
 ENTRYPOINT ["ftkv_server"]

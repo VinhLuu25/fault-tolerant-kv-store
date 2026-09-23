@@ -33,6 +33,16 @@ struct CommittedEntry {
     bool operator==(const CommittedEntry&) const = default;
 };
 
+struct NodeSnapshot {
+    NodeId node_id{0};
+    NodeState state{NodeState::follower};
+    Term current_term{0};
+    std::optional<NodeId> leader_id;
+    LogIndex commit_index{0};
+    LogIndex last_applied{0};
+    LogIndex last_log_index{0};
+};
+
 struct RequestVoteRequest {
     Term term{0};
     NodeId candidate_id{0};

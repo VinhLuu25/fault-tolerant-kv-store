@@ -1,0 +1,73 @@
+x-node-common: &node-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: ftkv-store:local
+  init: true
+  restart: unless-stopped
+  expose:
+    - "50051"
+  healthcheck:
+    test: ["CMD", "ftkv_server", "--healthcheck", "127.0.0.1:50051"]
+    interval: 2s
+    timeout: 1s
+    retries: 20
+    start_period: 3s
+  stop_grace_period: 5s
+  networks:
+    - raft
+
+services:
+  node1:
+    <<: *node-common
+    environment:
+      FTKV_NODE_ID: "1"
+      FTKV_LISTEN_ADDRESS: "0.0.0.0:50051"
+      FTKV_DATA_DIR: "/var/lib/ftkv"
+      FTKV_PEERS: "2=node2:50051,3=node3:50051"
+      FTKV_HEARTBEAT_INTERVAL_MS: "${FTKV_HEARTBEAT_INTERVAL_MS:-100}"
+      FTKV_ELECTION_TIMEOUT_MIN_MS: "${FTKV_NODE1_ELECTION_TIMEOUT_MIN_MS:-300}"
+      FTKV_ELECTION_TIMEOUT_MAX_MS: "${FTKV_NODE1_ELECTION_TIMEOUT_MAX_MS:-400}"
+    ports:
+      - "127.0.0.1:${FTKV_NODE1_PORT:-50051}:50051"
+    volumes:
+      - node1-data:/var/lib/ftkv
+
+  node2:
+    <<: *node-common
+    environment:
+      FTKV_NODE_ID: "2"
+      FTKV_LISTEN_ADDRESS: "0.0.0.0:50051"
+      FTKV_DATA_DIR: "/var/lib/ftkv"
+      FTKV_PEERS: "1=node1:50051,3=node3:50051"
+      FTKV_HEARTBEAT_INTERVAL_MS: "${FTKV_HEARTBEAT_INTERVAL_MS:-100}"
+      FTKV_ELECTION_TIMEOUT_MIN_MS: "${FTKV_NODE2_ELECTION_TIMEOUT_MIN_MS:-700}"
+      FTKV_ELECTION_TIMEOUT_MAX_MS: "${FTKV_NODE2_ELECTION_TIMEOUT_MAX_MS:-850}"
+    ports:
+      - "127.0.0.1:${FTKV_NODE2_PORT:-50052}:50051"
+    volumes:
+      - node2-data:/var/lib/ftkv
+
+  node3:
+    <<: *node-common
+    environment:
+      FTKV_NODE_ID: "3"
+      FTKV_LISTEN_ADDRESS: "0.0.0.0:50051"
+      FTKV_DATA_DIR: "/var/lib/ftkv"
+      FTKV_PEERS: "1=node1:50051,2=node2:50051"
+      FTKV_HEARTBEAT_INTERVAL_MS: "${FTKV_HEARTBEAT_INTERVAL_MS:-100}"
+      FTKV_ELECTION_TIMEOUT_MIN_MS: "${FTKV_NODE3_ELECTION_TIMEOUT_MIN_MS:-1100}"
+      FTKV_ELECTION_TIMEOUT_MAX_MS: "${FTKV_NODE3_ELECTION_TIMEOUT_MAX_MS:-1250}"
+    ports:
+      - "127.0.0.1:${FTKV_NODE3_PORT:-50053}:50051"
+    volumes:
+      - node3-data:/var/lib/ftkv
+
+networks:
+  raft:
+    driver: bridge
+
+volumes:
+  node1-data:
+  node2-data:
+  node3-data:

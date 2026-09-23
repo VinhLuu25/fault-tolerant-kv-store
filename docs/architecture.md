@@ -28,14 +28,19 @@ timeouts, heartbeats, replicated-log conflict repair, and current-term majority 
 event-driven state machine: the node runtime advances time with `tick()`, delivers inbound RPCs
 with `step()`, and sends messages returned by `take_messages()`. This keeps consensus independent
 of a particular clock or networking library. Persistent term, vote, and log state are accessed
-through `RaftStorage`; a production runtime must provide a durable implementation before exposing
-the node to clients.
+through `RaftStorage`. The runtime under `src/node/` adapts that interface to atomic file-backed
+snapshots, owns the consensus timer and per-peer transport workers, and exposes lifecycle-aware
+process configuration.
 
 The gRPC layer under `src/grpc/` exposes separate public key-value and internal Raft services from
 the versioned `proto/kvstore.proto` contract. Client calls always carry deadlines and retry only
 transient status codes with bounded exponential backoff. The server maps storage and consensus
 failures to gRPC statuses and uses the Raft request adapter without draining unrelated outbound
-consensus messages. TLS credentials and peer authentication remain runtime integration work.
+consensus messages. The local Compose topology resolves peers through service DNS and relies on
+isolated named volumes for per-node Raft and key-value snapshots. Staggered election windows make
+node 1 the preferred initial candidate while leadership is still established through the normal
+majority-vote path. TLS credentials, peer authentication, and production service discovery remain
+integration work.
 
 ## Expected request flow
 

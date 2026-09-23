@@ -205,6 +205,12 @@ std::vector<LogEntry> RaftNode::log_entries() const {
     return {std::next(log_.begin()), log_.end()};
 }
 
+NodeSnapshot RaftNode::snapshot() const {
+    const std::scoped_lock lock{mutex_};
+    return NodeSnapshot{config_.node_id, state_,         current_term_, leader_id_,
+                        commit_index_,   last_applied_, last_log_index_locked()};
+}
+
 void RaftNode::reset_election_timeout_locked() {
     const auto minimum = config_.election_timeout_min.count();
     const auto maximum = config_.election_timeout_max.count();

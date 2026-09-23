@@ -37,6 +37,7 @@ public:
     [[nodiscard]] LogIndex commit_index() const;
     [[nodiscard]] LogIndex last_applied() const;
     [[nodiscard]] std::vector<LogEntry> log_entries() const;
+    [[nodiscard]] NodeSnapshot snapshot() const;
 
 private:
     void reset_election_timeout_locked();

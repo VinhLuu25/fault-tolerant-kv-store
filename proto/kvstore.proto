@@ -11,6 +11,7 @@ service KeyValueStore {
 service Raft {
   rpc AppendEntries(AppendEntriesRequest) returns (AppendEntriesResponse);
   rpc RequestVote(RequestVoteRequest) returns (RequestVoteResponse);
+  rpc GetStatus(NodeStatusRequest) returns (NodeStatusResponse);
 }
 
 message GetRequest {
@@ -73,4 +74,24 @@ message RequestVoteRequest {
 message RequestVoteResponse {
   uint64 term = 1;
   bool vote_granted = 2;
+}
+
+message NodeStatusRequest {}
+
+enum NodeRole {
+  NODE_ROLE_UNSPECIFIED = 0;
+  NODE_ROLE_FOLLOWER = 1;
+  NODE_ROLE_CANDIDATE = 2;
+  NODE_ROLE_LEADER = 3;
+}
+
+message NodeStatusResponse {
+  uint64 node_id = 1;
+  NodeRole role = 2;
+  uint64 current_term = 3;
+  bool has_leader = 4;
+  uint64 leader_id = 5;
+  uint64 commit_index = 6;
+  uint64 last_applied = 7;
+  uint64 last_log_index = 8;
 }

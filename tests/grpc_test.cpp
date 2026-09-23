@@ -18,6 +18,7 @@ using namespace std::chrono_literals;
 using ftkv::raft::AppendEntriesRequest;
 using ftkv::raft::InMemoryRaftStorage;
 using ftkv::raft::LogEntry;
+using ftkv::raft::NodeState;
 using ftkv::raft::RaftConfig;
 using ftkv::raft::RaftNode;
 using ftkv::raft::RequestVoteRequest;
@@ -127,6 +128,12 @@ void test_node_communication() {
     ServerFixture fixture;
     GrpcClient client{fixture.server->endpoint(), client_options()};
 
+    const auto initial_status = client.status();
+    expect(initial_status.node_id == 2 && initial_status.state == NodeState::follower,
+           "GetStatus must expose the node identity and Raft role");
+    expect(initial_status.current_term == 0 && initial_status.last_log_index == 0,
+           "GetStatus must expose the initial Raft progress");
+
     const auto vote = client.request_vote(1, RequestVoteRequest{1, 1, 0, 0});
     expect(vote.term == 1 && vote.vote_granted,
            "RequestVote RPC must grant an eligible candidate");
@@ -144,6 +151,11 @@ void test_node_communication() {
            "AppendEntries response must identify the replicated request");
     expect(fixture.raft_node->commit_index() == 1,
            "follower must advance its commit index from the leader");
+    const auto replicated_status = client.status();
+    expect(replicated_status.leader_id == 1 && replicated_status.current_term == 1,
+           "GetStatus must identify the active leader and term");
+    expect(replicated_status.commit_index == 1 && replicated_status.last_log_index == 1,
+           "GetStatus must expose replicated and committed log progress");
     const auto committed = fixture.raft_node->take_committed_entries();
     expect(committed.size() == 1 && committed.front().command == "PUT replicated=value",
            "replicated command must be published to the state machine");

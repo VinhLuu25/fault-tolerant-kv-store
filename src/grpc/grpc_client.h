@@ -22,6 +22,8 @@ struct GrpcClientOptions {
     std::chrono::milliseconds maximum_backoff{100};
 };
 
+using NodeStatus = raft::NodeSnapshot;
+
 class GrpcError final : public std::runtime_error {
 public:
     GrpcError(std::string operation, const grpc::Status& status, std::size_t attempts);
@@ -45,6 +47,7 @@ public:
     [[nodiscard]] std::optional<std::string> get(std::string_view key) const;
     void put(std::string key, std::string value) const;
     [[nodiscard]] bool erase(std::string_view key) const;
+    [[nodiscard]] NodeStatus status() const;
 
     [[nodiscard]] raft::RequestVoteResponse request_vote(
         raft::NodeId sender, const raft::RequestVoteRequest& request) const;

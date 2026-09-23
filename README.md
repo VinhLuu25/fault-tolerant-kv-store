@@ -3,9 +3,9 @@
 A modern C++20 foundation for a distributed key-value store designed to remain available and
 consistent in the presence of node and network failures.
 
-> **Project status:** Early foundation. The repository currently provides thread-safe in-memory and
-> file-backed storage engines, a Raft consensus core, gRPC client/server communication, a server
-> entry point, tests, and build tooling. Runtime orchestration is planned work.
+> **Project status:** Early foundation. The repository provides thread-safe in-memory and
+> file-backed storage engines, a Raft consensus core, gRPC communication, a durable node runtime,
+> tests, and a local three-node Docker deployment.
 
 ## Goals
 
@@ -32,18 +32,30 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Run the placeholder server executable:
+The server reads its node identity, membership, timing, and data directory from environment
+variables. The ready-to-run configuration is provided by Docker Compose.
+
+## Run a three-node cluster
 
 ```bash
-./build/ftkv_server
+docker compose up --build --detach --wait
+docker compose ps
 ```
 
-Build the container image:
+The default host endpoints are `127.0.0.1:50051`, `127.0.0.1:50052`, and
+`127.0.0.1:50053`. Node 1 has the shortest election window and is the preferred initial leader;
+nodes 2 and 3 remain followers after the election. Confirm the live roles with:
 
 ```bash
-docker build -f docker/Dockerfile -t ftkv-store .
-docker run --rm ftkv-store
+docker compose exec node1 ftkv_server --status 127.0.0.1:50051
+docker compose exec node2 ftkv_server --status 127.0.0.1:50051
+docker compose exec node3 ftkv_server --status 127.0.0.1:50051
 ```
+
+Each node stores Raft and key-value snapshots in its own named volume. Run
+`./docker/test_cluster.sh` to verify election, follower roles, restart node 3, and confirm recovery
+of its persisted Raft progress. See [docs/deployment.md](docs/deployment.md) for configuration,
+ports, volume lifecycle, and operations.
 
 ## Repository layout
 
@@ -53,18 +65,18 @@ src/       Library implementations and executable entry points
 proto/     Versioned wire-protocol definitions
 tests/     Unit and integration tests
 docs/      Architecture and contributor documentation
-docker/    Container build definitions
+docker/    Container integration and recovery checks
 ```
 
-The intended component boundaries and future request flow are documented in
+The component boundaries and request flow are documented in
 [docs/architecture.md](docs/architecture.md). Development commands and conventions are in
 [docs/development.md](docs/development.md).
 
 ## Roadmap
 
 - Replace full-snapshot persistence with a durable write-ahead log and compaction.
-- Connect committed Raft commands to storage and add durable Raft hard-state storage.
-- Add TLS credentials, authentication, and production node orchestration.
+- Connect committed Raft commands to the key-value state machine.
+- Add TLS credentials, peer authentication, and production orchestration.
 - Add membership, failure detection, observability, and fault-injection tests.
 - Publish compatibility and operational guidance for the first stable release.
 

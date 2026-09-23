@@ -142,6 +142,34 @@ public:
         });
     }
 
+    grpc::Status GetStatus(grpc::ServerContext* context,
+                           const ::ftkv::v1::NodeStatusRequest*,
+                           ::ftkv::v1::NodeStatusResponse* response) override {
+        return run_handler(context, [&] {
+            const auto snapshot = raft_node_->snapshot();
+            response->set_node_id(snapshot.node_id);
+            switch (snapshot.state) {
+                case raft::NodeState::follower:
+                    response->set_role(::ftkv::v1::NODE_ROLE_FOLLOWER);
+                    break;
+                case raft::NodeState::candidate:
+                    response->set_role(::ftkv::v1::NODE_ROLE_CANDIDATE);
+                    break;
+                case raft::NodeState::leader:
+                    response->set_role(::ftkv::v1::NODE_ROLE_LEADER);
+                    break;
+            }
+            response->set_current_term(snapshot.current_term);
+            response->set_has_leader(snapshot.leader_id.has_value());
+            if (snapshot.leader_id.has_value()) {
+                response->set_leader_id(*snapshot.leader_id);
+            }
+            response->set_commit_index(snapshot.commit_index);
+            response->set_last_applied(snapshot.last_applied);
+            response->set_last_log_index(snapshot.last_log_index);
+        });
+    }
+
 private:
     std::shared_ptr<raft::RaftNode> raft_node_;
 };

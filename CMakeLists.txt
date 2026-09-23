@@ -84,8 +84,13 @@ target_include_directories(ftkv_grpc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(ftkv_grpc PUBLIC ftkv::core ftkv::proto gRPC::grpc++)
 target_compile_features(ftkv_grpc PUBLIC cxx_std_20)
 
-add_executable(ftkv_server src/main.cpp)
-target_link_libraries(ftkv_server PRIVATE ftkv::core)
+add_executable(
+    ftkv_server
+    src/main.cpp
+    src/node/node_runtime.cpp
+    src/node/node_runtime.h
+)
+target_link_libraries(ftkv_server PRIVATE ftkv::grpc)
 
 if(FTKV_ENABLE_WARNINGS)
     if(MSVC)

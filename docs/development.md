@@ -22,7 +22,7 @@ default and can be disabled only for exceptional toolchain compatibility with
 The root `.clang-format` is authoritative. Format changed C++ files before committing:
 
 ```bash
-clang-format -i include/ftkv/store/*.hpp src/*.cpp src/store/*.cpp tests/*.cpp
+clang-format -i include/ftkv/store/*.hpp src/*.cpp src/*/*.cpp src/*/*.h tests/*.cpp
 ```
 
 ## Change guidelines

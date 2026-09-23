@@ -131,6 +131,45 @@ bool GrpcClient::erase(const std::string_view key) const {
     return response.deleted();
 }
 
+NodeStatus GrpcClient::status() const {
+    ::ftkv::v1::NodeStatusRequest request;
+    ::ftkv::v1::NodeStatusResponse response;
+    const auto result = invoke_with_retry(options_, [&](grpc::ClientContext& context) {
+        response.Clear();
+        return raft_stub_->GetStatus(&context, request, &response);
+    });
+    if (!result.status.ok()) {
+        throw GrpcError{"GetStatus", result.status, result.attempts};
+    }
+
+    raft::NodeState state;
+    switch (response.role()) {
+        case ::ftkv::v1::NODE_ROLE_FOLLOWER:
+            state = raft::NodeState::follower;
+            break;
+        case ::ftkv::v1::NODE_ROLE_CANDIDATE:
+            state = raft::NodeState::candidate;
+            break;
+        case ::ftkv::v1::NODE_ROLE_LEADER:
+            state = raft::NodeState::leader;
+            break;
+        default:
+            throw GrpcError{"GetStatus",
+                            grpc::Status{grpc::StatusCode::DATA_LOSS,
+                                         "server returned an unknown Raft role"},
+                            result.attempts};
+    }
+
+    std::optional<raft::NodeId> leader_id;
+    if (response.has_leader()) {
+        leader_id = response.leader_id();
+    }
+    return NodeStatus{response.node_id(),       state,
+                      response.current_term(), leader_id,
+                      response.commit_index(), response.last_applied(),
+                      response.last_log_index()};
+}
+
 raft::RequestVoteResponse GrpcClient::request_vote(
     const raft::NodeId sender, const raft::RequestVoteRequest& request) const {
     if (request.candidate_id != sender) {
