@@ -10,6 +10,20 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
+The default CTest suite includes unit tests for storage, Raft, and gRPC plus Docker integration
+tests for cluster startup, leader election, and node recovery. Docker tests use an isolated Compose
+project, ephemeral host ports, and test-only volumes that are removed by a CTest cleanup fixture.
+Run a subset by label when iterating:
+
+```bash
+ctest --test-dir build --output-on-failure --label-regex unit
+ctest --test-dir build --output-on-failure --label-regex integration
+```
+
+Configure with `-DFTKV_ENABLE_DOCKER_TESTS=OFF` when only native unit tests are required. If Docker
+or the Compose plugin is installed but unavailable, registered integration tests report as
+skipped.
+
 If Protobuf and gRPC are installed under a custom prefix, add
 `-DCMAKE_PREFIX_PATH=/path/to/grpc/prefix` to the configure command.
 

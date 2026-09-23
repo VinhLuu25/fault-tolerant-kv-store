@@ -16,6 +16,7 @@ endif()
 find_package(gRPC CONFIG REQUIRED)
 
 option(FTKV_ENABLE_WARNINGS "Enable strict compiler warnings" ON)
+option(FTKV_ENABLE_DOCKER_TESTS "Enable Docker Compose integration tests" ON)
 
 # Set one language standard for every target in this project.
 set(CMAKE_CXX_STANDARD 20)

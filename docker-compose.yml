@@ -2,7 +2,7 @@ x-node-common: &node-common
   build:
     context: .
     dockerfile: Dockerfile
-  image: ftkv-store:local
+  image: "${FTKV_IMAGE:-ftkv-store:local}"
   init: true
   restart: unless-stopped
   expose:
