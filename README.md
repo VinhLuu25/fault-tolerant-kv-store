@@ -4,8 +4,8 @@ A modern C++20 foundation for a distributed key-value store designed to remain a
 consistent in the presence of node and network failures.
 
 > **Project status:** Early foundation. The repository currently provides thread-safe in-memory and
-> file-backed storage engines, a server entry point, an initial protocol contract, tests, and build
-> tooling. Replication, consensus, and networking are planned work.
+> file-backed storage engines, a transport-independent Raft consensus core, a server entry point,
+> an initial protocol contract, tests, and build tooling. RPC networking is planned work.
 
 ## Goals
 
@@ -62,7 +62,7 @@ The intended component boundaries and future request flow are documented in
 
 - Define client/server error semantics and generate RPC bindings.
 - Replace full-snapshot persistence with a durable write-ahead log and compaction.
-- Implement leader election and replicated-log consensus.
+- Connect the Raft core to durable hard-state storage and an RPC transport.
 - Add membership, failure detection, observability, and fault-injection tests.
 - Publish compatibility and operational guidance for the first stable release.
 

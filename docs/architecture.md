@@ -23,6 +23,14 @@ snapshots before becoming visible in memory, which preserves the last committed 
 fails. Snapshot replacement is atomic on supported local filesystems, but the format does not yet
 provide a write-ahead log, cross-process locking, or `fsync`-level crash guarantees.
 
+The Raft core under `src/raft/` implements fixed-membership leader election, randomized election
+timeouts, heartbeats, replicated-log conflict repair, and current-term majority commits. It is an
+event-driven state machine: the node runtime advances time with `tick()`, delivers inbound RPCs
+with `step()`, and sends messages returned by `take_messages()`. This keeps consensus independent
+of a particular clock or networking library. Persistent term, vote, and log state are accessed
+through `RaftStorage`; a production runtime must provide a durable implementation before exposing
+the node to clients.
+
 ## Expected request flow
 
 ```text
@@ -30,8 +38,8 @@ client -> RPC adapter -> node service -> consensus -> storage
                                       -> persistence
 ```
 
-Read behavior, conflict handling, failure assumptions, and consensus protocol details will be
-captured as architecture decision records before their implementations are introduced.
+Linearizable read behavior, membership changes, snapshots, and transport failure assumptions will
+be captured as architecture decision records before their implementations are introduced.
 
 ## Source boundaries
 

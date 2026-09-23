@@ -20,3 +20,4 @@ endfunction()
 
 ftkv_add_test(ftkv_unit_tests key_value_store_test.cpp)
 ftkv_add_test(ftkv_storage_tests kv_store_test.cpp)
+ftkv_add_test(ftkv_raft_tests raft_test.cpp)

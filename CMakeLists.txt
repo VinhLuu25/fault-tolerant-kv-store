@@ -18,6 +18,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(ftkv_core STATIC
+    src/raft/raft.cpp
+    src/raft/raft.h
+    src/raft/raft_node.cpp
+    src/raft/raft_node.h
     src/store/in_memory_key_value_store.cpp
     src/storage/kv_store.cpp
     src/storage/kv_store.h
