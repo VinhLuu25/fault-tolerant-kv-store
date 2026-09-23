@@ -82,6 +82,40 @@ void RaftNode::tick(const std::chrono::milliseconds elapsed) {
 
 bool RaftNode::step(const Message& message) {
     const std::scoped_lock lock{mutex_};
+    return step_locked(message);
+}
+
+std::optional<Message> RaftNode::handle_request(const Message& message) {
+    const bool is_request = std::holds_alternative<RequestVoteRequest>(message.rpc) ||
+                            std::holds_alternative<AppendEntriesRequest>(message.rpc);
+    if (!is_request) {
+        throw std::invalid_argument{"Raft message must contain a request"};
+    }
+
+    const std::scoped_lock lock{mutex_};
+    const auto first_new_message = outbox_.size();
+    if (!step_locked(message)) {
+        return std::nullopt;
+    }
+
+    for (auto index = first_new_message; index < outbox_.size(); ++index) {
+        const auto is_vote_response = std::holds_alternative<RequestVoteRequest>(message.rpc) &&
+                                      std::holds_alternative<RequestVoteResponse>(
+                                          outbox_[index].rpc);
+        const auto* append_request = std::get_if<AppendEntriesRequest>(&message.rpc);
+        const auto* append_response = std::get_if<AppendEntriesResponse>(&outbox_[index].rpc);
+        const auto is_append_response = append_request != nullptr && append_response != nullptr &&
+                                        append_response->request_id == append_request->request_id;
+        if (outbox_[index].to == message.from && (is_vote_response || is_append_response)) {
+            auto response = std::move(outbox_[index]);
+            outbox_.erase(std::next(outbox_.begin(), static_cast<std::ptrdiff_t>(index)));
+            return response;
+        }
+    }
+    return std::nullopt;
+}
+
+bool RaftNode::step_locked(const Message& message) {
     if (message.to != config_.node_id || !is_peer_locked(message.from)) {
         return false;
     }

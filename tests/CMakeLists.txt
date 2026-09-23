@@ -1,7 +1,11 @@
 # Tests intentionally use only the standard library so a fresh checkout remains easy to build.
 function(ftkv_add_test target source)
     add_executable(${target} ${source})
-    target_link_libraries(${target} PRIVATE ftkv::core)
+    if(ARGN)
+        target_link_libraries(${target} PRIVATE ${ARGN})
+    else()
+        target_link_libraries(${target} PRIVATE ftkv::core)
+    endif()
     target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/src)
     target_compile_features(${target} PRIVATE cxx_std_20)
 
@@ -21,3 +25,4 @@ endfunction()
 ftkv_add_test(ftkv_unit_tests key_value_store_test.cpp)
 ftkv_add_test(ftkv_storage_tests kv_store_test.cpp)
 ftkv_add_test(ftkv_raft_tests raft_test.cpp)
+ftkv_add_test(ftkv_grpc_tests grpc_test.cpp ftkv::grpc)

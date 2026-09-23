@@ -31,6 +31,12 @@ of a particular clock or networking library. Persistent term, vote, and log stat
 through `RaftStorage`; a production runtime must provide a durable implementation before exposing
 the node to clients.
 
+The gRPC layer under `src/grpc/` exposes separate public key-value and internal Raft services from
+the versioned `proto/kvstore.proto` contract. Client calls always carry deadlines and retry only
+transient status codes with bounded exponential backoff. The server maps storage and consensus
+failures to gRPC statuses and uses the Raft request adapter without draining unrelated outbound
+consensus messages. TLS credentials and peer authentication remain runtime integration work.
+
 ## Expected request flow
 
 ```text

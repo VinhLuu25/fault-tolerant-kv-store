@@ -10,6 +10,9 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
+If Protobuf and gRPC are installed under a custom prefix, add
+`-DCMAKE_PREFIX_PATH=/path/to/grpc/prefix` to the configure command.
+
 For a release build, replace `Debug` with `Release`. Strict compiler warnings are enabled by
 default and can be disabled only for exceptional toolchain compatibility with
 `-DFTKV_ENABLE_WARNINGS=OFF`.

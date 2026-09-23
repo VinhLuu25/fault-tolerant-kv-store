@@ -4,8 +4,8 @@ A modern C++20 foundation for a distributed key-value store designed to remain a
 consistent in the presence of node and network failures.
 
 > **Project status:** Early foundation. The repository currently provides thread-safe in-memory and
-> file-backed storage engines, a transport-independent Raft consensus core, a server entry point,
-> an initial protocol contract, tests, and build tooling. RPC networking is planned work.
+> file-backed storage engines, a Raft consensus core, gRPC client/server communication, a server
+> entry point, tests, and build tooling. Runtime orchestration is planned work.
 
 ## Goals
 
@@ -18,14 +18,16 @@ consistent in the presence of node and network failures.
 
 - A C++20 compiler (Clang 12+, GCC 10+, or MSVC 19.29+)
 - CMake 3.20 or newer
+- Protobuf and gRPC C++ development packages
 - Docker (optional)
 
-No third-party libraries are required for the initial build.
+Set `CMAKE_PREFIX_PATH` when gRPC is installed under a non-system prefix.
 
 ## Build and test
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_PREFIX_PATH=/path/to/grpc/prefix
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
@@ -60,9 +62,9 @@ The intended component boundaries and future request flow are documented in
 
 ## Roadmap
 
-- Define client/server error semantics and generate RPC bindings.
 - Replace full-snapshot persistence with a durable write-ahead log and compaction.
-- Connect the Raft core to durable hard-state storage and an RPC transport.
+- Connect committed Raft commands to storage and add durable Raft hard-state storage.
+- Add TLS credentials, authentication, and production node orchestration.
 - Add membership, failure detection, observability, and fault-injection tests.
 - Publish compatibility and operational guidance for the first stable release.
 

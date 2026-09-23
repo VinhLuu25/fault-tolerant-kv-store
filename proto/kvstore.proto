@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package ftkv.v1;
+
+service KeyValueStore {
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Put(PutRequest) returns (PutResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+}
+
+service Raft {
+  rpc AppendEntries(AppendEntriesRequest) returns (AppendEntriesResponse);
+  rpc RequestVote(RequestVoteRequest) returns (RequestVoteResponse);
+}
+
+message GetRequest {
+  bytes key = 1;
+}
+
+message GetResponse {
+  bool found = 1;
+  bytes value = 2;
+}
+
+message PutRequest {
+  bytes key = 1;
+  bytes value = 2;
+}
+
+message PutResponse {}
+
+message DeleteRequest {
+  bytes key = 1;
+}
+
+message DeleteResponse {
+  bool deleted = 1;
+}
+
+message RaftLogEntry {
+  uint64 term = 1;
+  bytes command = 2;
+  bool is_no_op = 3;
+}
+
+message AppendEntriesRequest {
+  uint64 term = 1;
+  uint64 leader_id = 2;
+  uint64 previous_log_index = 3;
+  uint64 previous_log_term = 4;
+  repeated RaftLogEntry entries = 5;
+  uint64 leader_commit = 6;
+  uint64 request_id = 7;
+}
+
+message AppendEntriesResponse {
+  uint64 term = 1;
+  bool success = 2;
+  uint64 match_index = 3;
+  uint64 conflict_index = 4;
+  bool has_conflict_term = 5;
+  uint64 conflict_term = 6;
+  uint64 request_id = 7;
+}
+
+message RequestVoteRequest {
+  uint64 term = 1;
+  uint64 candidate_id = 2;
+  uint64 last_log_index = 3;
+  uint64 last_log_term = 4;
+}
+
+message RequestVoteResponse {
+  uint64 term = 1;
+  bool vote_granted = 2;
+}

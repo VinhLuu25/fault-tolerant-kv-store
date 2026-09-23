@@ -24,6 +24,7 @@ public:
 
     void tick(std::chrono::milliseconds elapsed);
     [[nodiscard]] bool step(const Message& message);
+    [[nodiscard]] std::optional<Message> handle_request(const Message& message);
     [[nodiscard]] std::optional<LogIndex> propose(std::string command);
 
     [[nodiscard]] std::vector<Message> take_messages();
@@ -60,6 +61,7 @@ private:
     [[nodiscard]] LogIndex last_log_index_locked() const;
     [[nodiscard]] Term last_log_term_locked() const;
     [[nodiscard]] std::size_t quorum_size_locked() const;
+    [[nodiscard]] bool step_locked(const Message& message);
 
     RaftConfig config_;
     std::shared_ptr<RaftStorage> storage_;

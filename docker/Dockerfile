@@ -7,6 +7,10 @@ RUN apt-get update \
         build-essential \
         ca-certificates \
         cmake \
+        libgrpc++-dev \
+        libprotobuf-dev \
+        protobuf-compiler \
+        protobuf-compiler-grpc \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
