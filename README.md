@@ -3,9 +3,9 @@
 A modern C++20 foundation for a distributed key-value store designed to remain available and
 consistent in the presence of node and network failures.
 
-> **Project status:** Early foundation. The repository currently provides a thread-safe in-memory
-> storage core, a server entry point, an initial protocol contract, tests, and build tooling.
-> Replication, consensus, persistence, and networking are planned work.
+> **Project status:** Early foundation. The repository currently provides thread-safe in-memory and
+> file-backed storage engines, a server entry point, an initial protocol contract, tests, and build
+> tooling. Replication, consensus, and networking are planned work.
 
 ## Goals
 
@@ -61,7 +61,7 @@ The intended component boundaries and future request flow are documented in
 ## Roadmap
 
 - Define client/server error semantics and generate RPC bindings.
-- Add a durable write-ahead log and storage engine.
+- Replace full-snapshot persistence with a durable write-ahead log and compaction.
 - Implement leader election and replicated-log consensus.
 - Add membership, failure detection, observability, and fault-injection tests.
 - Publish compatibility and operational guidance for the first stable release.

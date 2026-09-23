@@ -8,6 +8,7 @@ project(
 )
 
 include(GNUInstallDirs)
+find_package(Threads REQUIRED)
 
 option(FTKV_ENABLE_WARNINGS "Enable strict compiler warnings" ON)
 
@@ -18,6 +19,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(ftkv_core STATIC
     src/store/in_memory_key_value_store.cpp
+    src/storage/kv_store.cpp
+    src/storage/kv_store.h
 )
 add_library(ftkv::core ALIAS ftkv_core)
 
@@ -25,8 +28,11 @@ target_include_directories(ftkv_core
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 target_compile_features(ftkv_core PUBLIC cxx_std_20)
+target_link_libraries(ftkv_core PUBLIC Threads::Threads)
 
 add_executable(ftkv_server src/main.cpp)
 target_link_libraries(ftkv_server PRIVATE ftkv::core)

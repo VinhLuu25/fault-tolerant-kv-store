@@ -16,9 +16,12 @@ a particular RPC framework or deployment environment.
 4. **Persistence** records the replicated log, snapshots, and durable key-value state.
 5. **Node runtime** owns configuration, membership, background work, and graceful shutdown.
 
-The current `KeyValueStore` interface and `InMemoryKeyValueStore` implementation establish the
-storage boundary. The in-memory implementation is thread-safe but intentionally non-durable; it is
-not yet a distributed system.
+The `KeyValueStore` interface establishes the storage boundary. `InMemoryKeyValueStore` remains a
+lightweight non-durable implementation. The internal `KvStore` adds thread-safe, file-backed
+persistence through an injectable `Persistence` interface. Mutations are written as versioned
+snapshots before becoming visible in memory, which preserves the last committed state if a save
+fails. Snapshot replacement is atomic on supported local filesystems, but the format does not yet
+provide a write-ahead log, cross-process locking, or `fsync`-level crash guarantees.
 
 ## Expected request flow
 
